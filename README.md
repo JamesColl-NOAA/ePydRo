@@ -1,5 +1,5 @@
 
-![](https://github.com/JamesColl-NOAA/ePydRo/blob/dev/man/figures/3bcf273d-2154-42a0-8c19-6d6954d3bca2.png)
+![](https://github.com/JamesColl-NOAA/ePydRo/blob/main/man/figures/3bcf273d-2154-42a0-8c19-6d6954d3bca2.png)
 
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -43,7 +43,7 @@ This application transforms the eHydro data from their recorded datum to a norma
 
 ### How does ePydRo data flow?
 
-![_9743a3fb7f8bf395e9f8ac2282cc5490.png](https://github.com/JamesColl-NOAA/ePydRo/blob/dev/man/figures/_9743a3fb7f8bf395e9f8ac2282cc5490.png)
+![_9743a3fb7f8bf395e9f8ac2282cc5490.png](https://github.com/JamesColl-NOAA/ePydRo/blob/main/man/figures/_9743a3fb7f8bf395e9f8ac2282cc5490.png)
 
 ## HowTo's
 The general workflow in cookbook form:
