@@ -1,0 +1,113 @@
+---
+title: "Channel Dimensional Schema"
+output: rmarkdown::html_vignette
+description: |
+  "What form of data are we after?"
+vignette: >
+  %\VignetteIndexEntry{channel_dimensional_schema}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(dm)
+library(labelled)
+```
+
+# Flowpath/Flowline Data Model
+
+```{r, echo = FALSE}
+path <- "C:/Users/james.coll/Desktop/root/data/hydrofabric/prototype"
+
+## Start
+# Collect Flowline values - sf::st_layers(file.path(path,"01_uniform_ng.gpkg",fsep = .Platform$file.sep))
+hydrofabric_flowlines <- sf::st_read(file.path(path,"01_uniform_ng.gpkg",fsep = .Platform$file.sep),layer='flowlines')
+hydrofabric_flowpaths <- sf::st_read(file.path(path,"01_uniform_ng.gpkg",fsep = .Platform$file.sep),layer='flowpaths')
+flowpaths_ml <- arrow::read_parquet(file.path(path,"flowpath_attributes_ml.parquet",fsep = .Platform$file.sep))
+flowlines_ml <- arrow::read_parquet(file.path(path,"flowline_attributes_ml.parquet",fsep = .Platform$file.sep))
+
+in_channel_depth = (((flowlines_ml$TopWdth-flowlines_ml$BtmWdth)/2)/sin(atan(flowlines_ml$ChSlp)))*sin(90-atan(flowlines_ml$ChSlp)) %>% as.data.frame()
+in_channel_depth_range_normalized = in_channel_depth/max(in_channel_depth,na.rm = T)
+
+my_dat <- dm::dm(hydrofabric_flowlines,hydrofabric_flowpaths,flowpaths_ml,flowlines_ml)
+
+my_dat |>
+  dm::dm_set_table_description(
+    "Hydrofabric 3.0 geopackage flowpaths" = hydrofabric_flowpaths,
+    "Hydrofabric 3.0 geopackage flowlines" = hydrofabric_flowlines,
+    "Flowpath attributes from Machien Learning" = flowpaths_ml,
+    "Flowline attributes from Machien Learning" = flowlines_ml) |>
+  dm::dm_add_pk(hydrofabric_flowpaths, flowpath_id) |>
+  dm::dm_add_pk(hydrofabric_flowlines, flowline_id) |>
+  dm::dm_add_pk(flowpaths_ml, flowpath_id) |>
+  dm::dm_add_pk(flowlines_ml, flowline_id)  |>
+  dm::dm_add_fk(hydrofabric_flowpaths, flowpath_id, flowpaths_ml, flowpath_id) |>
+  dm::dm_add_fk(hydrofabric_flowlines, flowline_id, flowlines_ml, flowline_id) |>
+  dm::dm_add_fk(hydrofabric_flowpaths, flowpath_id, hydrofabric_flowlines, flowpath_id) |>
+  dm::dm_set_colors(
+    '#283618' = hydrofabric_flowlines,
+    '#bc6c25' = hydrofabric_flowpaths,
+    '#dda15e' = flowpaths_ml,
+    '#606c38' = flowlines_ml
+  ) |>
+  dm::dm_draw(view_type = 'all')
+```
+
+```{r, echo = FALSE}
+flowpaths_ml_table = tibble::tribble(
+  ~Attribute, ~Description,
+  "id", "The unique identifier of that reach (from nextgen hydrofabric).",
+  "toid", "The unique identifier for the downstream connected reach (flow destination; from nextgen hydrofabric).",
+  "link", "same as id with different name",
+  "to", "same as toid with different name",
+  "n", "Manning’s roughness coefficient, describing resistance to flow in the main channel.",
+  "BtmWdth", "The bottom width of the channel (meters).",
+  "TopWdth", "The top width of the channel at bankfull stage (meters).",
+  "ChSlp", "The trapezoid slope.",
+  "nCC", "Manning’s roughness coefficient for the compound channel (floodplain).",
+  "TopWdthCC", "The top width of the compound channel (floodplain width).",
+  "Y", "The flow depth in the main channel (meters).",
+  "YCC", "The flow depth in the compound channel (floodplain).",
+  "shape_r", "owp_dingman_r - The shape factor of the channel following the Dingman formulation for hydraulic geometry.",
+  "MusX", "Muskingum X coefficient, describing how flow moves through the reach.",
+  "MusK", "Muskingum K coefficient, a travel time parameter in the Muskingum routing method.",
+  "gage", "The USGS or other monitoring gage ID associated with the flowline when available.",
+  "gage_nex_id", "The identifier for nextgen gage.*",
+  "WaterbodyID", "Identifier for any lake, reservoir, or impoundment associated with the flowline.",
+  "waterbody_nex_id",  "Identifier for any lake or reservoir associated with nextgen.*",
+  "Length_m", "The length of the flowline segment in meters.",
+  "So", "The initial bed slope of the channel.",
+  "alt", "represents the elevation or altitude of the flowline.",
+  "vpuid", "The VPU (Vector Processing Unit) ID, a regional identifier for watershed processing in NWM."
+)
+flowlines_ml_table = tibble::tribble(
+  ~Attribute, ~Description,
+  "id", "The unique identifier of that reach (from reference-fabric or hf_id).",
+  "toid", "The unique identifier for the downstream connected reach (flow destination;from reference-fabric or hf_id).",
+  "link", "same as id with different name",
+  "to", "same as toid with different name",
+  "n", "Manning’s roughness coefficient, describing resistance to flow in the main channel.",
+  "BtmWdth", "The bottom width of the channel (meters).",
+  "TopWdth", "The top width of the channel at bankfull stage (meters).",
+  "ChSlp", "The trapezoid slope.",
+  "nCC", "Manning’s roughness coefficient for the compound channel (floodplain).",
+  "TopWdthCC", "The top width of the compound channel (floodplain width).",
+  "Y", "The flow depth in the main channel (meters).",
+  "YCC", "The flow depth in the compound channel (floodplain).",
+  "shape_r", "owp_dingman_r – The shape factor of the channel following the Dingman formulation for hydraulic geometry.",
+  "MusX", "Muskingum X coefficient, describing how flow moves through the reach.",
+  "MusK", "Muskingum K coefficient, a travel time parameter in the Muskingum routing method.",
+  "gage", "The USGS or other monitoring gage ID associated with the flowline when available.",
+  "gage_nex_id", "The identifier for nextgen gage*.",
+  "WaterbodyID", "Identifier for any lake, reservoir, or impoundment associated with the flowline.",
+  "waterbody_nex_id",  "Identifier for any lake or reservoir associated with nextgen*.",
+  "Length_m", "The length of the flowline segment in meters.",
+  "So", "The initial bed slope of the channel.",
+  "alt", "represents the elevation or altitude of the flowline.",
+  "vpuid", "The VPU (Vector Processing Unit) ID, a regional identifier for watershed processing in NWM."
+)
+
+formattable::formattable(flowpaths_ml_table, caption = "flowpath_attributes_ml.parquet")
+formattable::formattable(flowlines_ml_table, caption = "flowline_attributes_ml.parquet")
+```

@@ -1,0 +1,66 @@
+---
+title: "An_end_to_end_epydro_tutorial"
+output: rmarkdown::html_vignette
+description: |
+  "How to construct and interact with ePydRo and its data"
+vignette: >
+  %\VignetteIndexEntry{An_end_to_end_epydro_tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Setup
+
+eHydro can be a complicated database to work with when you come at the problem with the sole objective of leaving with a .tif file of bathymetry in hand for use in your workflow. 
+
+This tutorial will guide you through the motions of installing and running ePydRo on your own hardware through to walking away with a tif in hand, but will be greatly aided if you choose an area more meaningful to you that has a survey.  ePydRo can process most but not all of the footprints tracked on the offical [USACE Hydrographic Survey (eHydro) survey database dashboard](https://www.arcgis.com/apps/dashboards/4b8f2ba307684cf597617bf1b6d2f85d).
+
+# Installiung
+
+I'll assume you've already got an installation of R and RStudio on your computer but if not follow the instructions laid out here and then come back to this page.
+
+```{r, eval = FALSE}
+devtools::load_all()
+# remotes::install_github("NOAA-OWP/ePydRo")    # If it asks for package updates: press 1
+ePydRo::marco()                           # A "hello world" test
+```
+
+# Running
+
+Running ePydRo involves staging data on your hard drive for future access so we need to provide a path for us to write all those files out to.  Do this with the following:
+
+```{r, eval = FALSE}
+ehydro_root <- "C:/Users/james.coll/Desktop/root/data/ePydRo"
+ePydRo::collect_ehydro(ehydro_root)
+```
+
+# Scraping
+
+Having now established our directory to work in, we'll start by processing some of the survbeys into their entwined form.  Since I'm interested in using data around puerto-rico, I'll filter the available surveys to just those ones.
+
+## Surveys around puerto-rico-virgin-islands
+
+```{r, eval = FALSE}
+epydro_tracker <- sf::st_read(file.path(ehydro_root,"epydro_SurveyJob.fgb",fsep = .Platform$file.sep))
+pr_surveys <- epydro_tracker[AOI::geocode("Puerto Rico" ,bbox = TRUE) |> sf::st_buffer(dist = 7000),]
+mapview::mapview(pr_surveys)
+```
+
+## Writing out ARCO data
+
+I'm not the largest fan of the "Analysis-ready cloud optimized" (ARCO) acronym but the one-two punch of transforming a survey to an entwine point cloud and then a flexible rasterization to give you the final tif is what we're going to do next.  This "ARCO" step is critical as the data needs to be reprojected and datum normalized before we attempt to make a useful modeling surface out of it.
+
+```{r, eval = FALSE}
+ePydRo::scrape_and_transform(ehydro_root,process_index = pr_surveys[3,]$sheet_index,overwrite=FALSE,vdatum_domain_override='prvi',is_quiet = FALSE)
+```
+
+## Writing out "useable" data
+
+While that normalized point cloud is the heart of this data, most workflows require that tif surface so to give us that we'll call the following which needs a path to a directory you want to write that file out to.
+
+```{r, eval = FALSE}
+ePydRo::to_tiff_and_stage(ehydro_root = "~/data/ePydRo",process_index = pr_survey[3,]$sheet_index,overwrite=FALSE,vdatum_domain_override=NULL,is_quiet = FALSE)
+mapview::mapview()
+```
+
+Huzzah, We now have the data we need to move on with our initial modeling task!

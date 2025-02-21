@@ -1,0 +1,24 @@
+url: ~
+template:
+  bootstrap: 5
+  bootswatch: litera
+authors:
+   NOAA:
+     html: "<img src='https://raw.githubusercontent.com/NOAA-OWP/RRASSLER/refs/heads/dev/man/figures/noaa-logo.png' height='36' alt='NOAA OWP'/>"
+     href: "https://water.noaa.gov/about/nwm"
+   Lynker:
+     html: "<img src='https://raw.githubusercontent.com/NOAA-OWP/RRASSLER/refs/heads/dev/man/figures/lynker-logo.png' height='36' alt='Lynker'/>"
+     href: "https://lynker-spatial.com/"
+   sidebar:
+    roles: [cre, ctb, fnd]
+   footer:
+    roles: [cre, ctb, fnd]
+   citation:
+    roles: [cre]
+
+articles:
+- title: Articles
+  desc: Tutorials, How-To's, and References
+  contents:
+  - An_end_to_end_epydro_tutorial
+  - channel_dimensional_schema

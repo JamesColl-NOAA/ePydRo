@@ -1,0 +1,8 @@
+pandoc: 3.1.1
+pkgdown: 2.0.9
+pkgdown_sha: ~
+articles:
+  An_end_to_end_epydro_tutorial: An_end_to_end_epydro_tutorial.html
+  channel_dimensional_schema: channel_dimensional_schema.html
+last_built: 2025-02-21T17:08Z
+
